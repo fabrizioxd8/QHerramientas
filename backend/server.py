@@ -230,7 +230,9 @@ async def get_project(project_id: str):
     project = await db.projects.find_one({"id": project_id})
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-    return Project(**project)
+    # Clean project data by removing MongoDB ObjectId
+    clean_project = {k: v for k, v in project.items() if k != '_id'}
+    return Project(**clean_project)
 
 @api_router.put("/projects/{project_id}", response_model=Project)
 async def update_project(project_id: str, project_update: ProjectCreate):
