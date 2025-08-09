@@ -386,11 +386,17 @@ async def get_active_checkouts():
         project = await db.projects.find_one({"id": checkout["project_id"]})
         worker = await db.workers.find_one({"id": checkout["worker_id"]})
         
+        # Clean all data by removing MongoDB ObjectId
+        clean_checkout = {k: v for k, v in checkout.items() if k != '_id'}
+        clean_tool = {k: v for k, v in tool.items() if k != '_id'} if tool else None
+        clean_project = {k: v for k, v in project.items() if k != '_id'} if project else None
+        clean_worker = {k: v for k, v in worker.items() if k != '_id'} if worker else None
+        
         result.append({
-            "checkout": CheckoutRecord(**checkout),
-            "tool": Tool(**tool) if tool else None,
-            "project": Project(**project) if project else None,
-            "worker": Worker(**worker) if worker else None
+            "checkout": CheckoutRecord(**clean_checkout),
+            "tool": Tool(**clean_tool) if clean_tool else None,
+            "project": Project(**clean_project) if clean_project else None,
+            "worker": Worker(**clean_worker) if clean_worker else None
         })
     
     return result
