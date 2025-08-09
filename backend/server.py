@@ -397,8 +397,11 @@ async def get_dashboard():
         project = await db.projects.find_one({"id": checkout["project_id"]})
         worker = await db.workers.find_one({"id": checkout["worker_id"]})
         
+        # Clean checkout data by removing MongoDB ObjectId
+        clean_checkout = {k: v for k, v in checkout.items() if k != '_id'}
+        
         recent_checkouts_with_details.append({
-            "checkout": checkout,
+            "checkout": clean_checkout,
             "tool_name": tool["name"] if tool else "Unknown Tool",
             "project_name": project["name"] if project else "Unknown Project",
             "worker_name": worker["name"] if worker else "Unknown Worker"
