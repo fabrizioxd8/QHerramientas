@@ -371,7 +371,9 @@ async def get_checkouts(status: Optional[CheckoutStatus] = None):
         query["status"] = status
     
     checkouts = await db.checkout_records.find(query).to_list(1000)
-    return [CheckoutRecord(**checkout) for checkout in checkouts]
+    # Clean checkouts data by removing MongoDB ObjectId
+    clean_checkouts = [{k: v for k, v in checkout.items() if k != '_id'} for checkout in checkouts]
+    return [CheckoutRecord(**checkout) for checkout in clean_checkouts]
 
 @api_router.get("/checkouts/active")
 async def get_active_checkouts():
