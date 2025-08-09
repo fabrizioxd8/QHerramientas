@@ -242,7 +242,15 @@ async def get_workers():
 async def create_worker(worker: WorkerCreate):
     worker_dict = worker.dict()
     worker_obj = Worker(**worker_dict)
-    await db.workers.insert_one(worker_obj.dict())
+    
+    # Convert Worker object to dict and handle date serialization
+    worker_data = worker_obj.dict()
+    
+    # Convert datetime objects to ISO format strings for MongoDB
+    if worker_data.get('created_at'):
+        worker_data['created_at'] = worker_data['created_at'].isoformat()
+    
+    await db.workers.insert_one(worker_data)
     return worker_obj
 
 @api_router.get("/workers/{worker_id}", response_model=Worker)
