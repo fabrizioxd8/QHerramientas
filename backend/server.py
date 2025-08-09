@@ -195,7 +195,21 @@ async def get_projects():
 async def create_project(project: ProjectCreate):
     project_dict = project.dict()
     project_obj = Project(**project_dict)
-    await db.projects.insert_one(project_obj.dict())
+    
+    # Convert Project object to dict and handle date serialization
+    project_data = project_obj.dict()
+    
+    # Convert date objects to ISO format strings for MongoDB
+    if project_data.get('start_date'):
+        project_data['start_date'] = project_data['start_date'].isoformat()
+    if project_data.get('end_date'):
+        project_data['end_date'] = project_data['end_date'].isoformat()
+    if project_data.get('created_at'):
+        project_data['created_at'] = project_data['created_at'].isoformat()
+    if project_data.get('updated_at'):
+        project_data['updated_at'] = project_data['updated_at'].isoformat()
+    
+    await db.projects.insert_one(project_data)
     return project_obj
 
 @api_router.get("/projects/{project_id}", response_model=Project)
