@@ -172,7 +172,12 @@ async def update_tool(tool_id: str, tool_update: ToolCreate):
         raise HTTPException(status_code=404, detail="Tool not found")
     
     update_data = tool_update.dict()
-    update_data["updated_at"] = datetime.utcnow()
+    update_data["updated_at"] = datetime.utcnow().isoformat()
+    
+    # Convert date objects to ISO format strings for MongoDB
+    if update_data.get('calibration_due'):
+        if isinstance(update_data['calibration_due'], date):
+            update_data['calibration_due'] = update_data['calibration_due'].isoformat()
     
     await db.tools.update_one({"id": tool_id}, {"$set": update_data})
     updated_tool = await db.tools.find_one({"id": tool_id})
