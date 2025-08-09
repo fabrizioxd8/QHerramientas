@@ -165,7 +165,9 @@ async def get_tool(tool_id: str):
     tool = await db.tools.find_one({"id": tool_id})
     if not tool:
         raise HTTPException(status_code=404, detail="Tool not found")
-    return Tool(**tool)
+    # Clean tool data by removing MongoDB ObjectId
+    clean_tool = {k: v for k, v in tool.items() if k != '_id'}
+    return Tool(**clean_tool)
 
 @api_router.put("/tools/{tool_id}", response_model=Tool)
 async def update_tool(tool_id: str, tool_update: ToolCreate):
