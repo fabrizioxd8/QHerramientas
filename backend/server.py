@@ -321,7 +321,7 @@ async def return_tool(return_data: ReturnTool):
     await db.checkout_records.update_one(
         {"id": return_data.checkout_id},
         {"$set": {
-            "actual_return": return_time,
+            "actual_return": return_time.isoformat(),
             "status": CheckoutStatus.RETURNED,
             "notes": return_data.notes
         }}
@@ -330,7 +330,7 @@ async def return_tool(return_data: ReturnTool):
     # Update tool status back to available
     await db.tools.update_one(
         {"id": checkout["tool_id"]},
-        {"$set": {"status": ToolStatus.AVAILABLE, "updated_at": return_time}}
+        {"$set": {"status": ToolStatus.AVAILABLE, "updated_at": return_time.isoformat()}}
     )
     
     return {"message": "Tool returned successfully"}
