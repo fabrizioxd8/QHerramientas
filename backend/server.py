@@ -200,7 +200,9 @@ async def delete_tool(tool_id: str):
 @api_router.get("/projects", response_model=List[Project])
 async def get_projects():
     projects = await db.projects.find().to_list(1000)
-    return [Project(**project) for project in projects]
+    # Clean projects data by removing MongoDB ObjectId
+    clean_projects = [{k: v for k, v in project.items() if k != '_id'} for project in projects]
+    return [Project(**project) for project in clean_projects]
 
 @api_router.post("/projects", response_model=Project)
 async def create_project(project: ProjectCreate):
