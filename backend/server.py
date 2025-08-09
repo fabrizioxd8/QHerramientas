@@ -226,7 +226,15 @@ async def update_project(project_id: str, project_update: ProjectCreate):
         raise HTTPException(status_code=404, detail="Project not found")
     
     update_data = project_update.dict()
-    update_data["updated_at"] = datetime.utcnow()
+    update_data["updated_at"] = datetime.utcnow().isoformat()
+    
+    # Convert date objects to ISO format strings for MongoDB
+    if update_data.get('start_date'):
+        if isinstance(update_data['start_date'], date):
+            update_data['start_date'] = update_data['start_date'].isoformat()
+    if update_data.get('end_date'):
+        if isinstance(update_data['end_date'], date):
+            update_data['end_date'] = update_data['end_date'].isoformat()
     
     await db.projects.update_one({"id": project_id}, {"$set": update_data})
     updated_project = await db.projects.find_one({"id": project_id})
