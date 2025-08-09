@@ -285,7 +285,9 @@ async def get_worker(worker_id: str):
     worker = await db.workers.find_one({"id": worker_id})
     if not worker:
         raise HTTPException(status_code=404, detail="Worker not found")
-    return Worker(**worker)
+    # Clean worker data by removing MongoDB ObjectId
+    clean_worker = {k: v for k, v in worker.items() if k != '_id'}
+    return Worker(**clean_worker)
 
 # Checkout endpoints
 @api_router.post("/checkout", response_model=CheckoutRecord)
