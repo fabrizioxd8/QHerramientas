@@ -253,7 +253,9 @@ async def update_project(project_id: str, project_update: ProjectCreate):
     
     await db.projects.update_one({"id": project_id}, {"$set": update_data})
     updated_project = await db.projects.find_one({"id": project_id})
-    return Project(**updated_project)
+    # Clean project data by removing MongoDB ObjectId
+    clean_project = {k: v for k, v in updated_project.items() if k != '_id'}
+    return Project(**clean_project)
 
 # Worker endpoints
 @api_router.get("/workers", response_model=List[Worker])
