@@ -261,7 +261,9 @@ async def update_project(project_id: str, project_update: ProjectCreate):
 @api_router.get("/workers", response_model=List[Worker])
 async def get_workers():
     workers = await db.workers.find().to_list(1000)
-    return [Worker(**worker) for worker in workers]
+    # Clean workers data by removing MongoDB ObjectId
+    clean_workers = [{k: v for k, v in worker.items() if k != '_id'} for worker in workers]
+    return [Worker(**worker) for worker in clean_workers]
 
 @api_router.post("/workers", response_model=Worker)
 async def create_worker(worker: WorkerCreate):
