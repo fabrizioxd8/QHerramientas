@@ -137,7 +137,9 @@ class DashboardStats(BaseModel):
 @api_router.get("/tools", response_model=List[Tool])
 async def get_tools():
     tools = await db.tools.find().to_list(1000)
-    return [Tool(**tool) for tool in tools]
+    # Clean tools data by removing MongoDB ObjectId
+    clean_tools = [{k: v for k, v in tool.items() if k != '_id'} for tool in tools]
+    return [Tool(**tool) for tool in clean_tools]
 
 @api_router.post("/tools", response_model=Tool)
 async def create_tool(tool: ToolCreate):
