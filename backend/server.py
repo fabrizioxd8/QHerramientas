@@ -284,12 +284,24 @@ async def checkout_tool(checkout: CheckoutCreate):
     # Create checkout record
     checkout_dict = checkout.dict()
     checkout_obj = CheckoutRecord(**checkout_dict)
-    await db.checkout_records.insert_one(checkout_obj.dict())
+    
+    # Convert CheckoutRecord object to dict and handle date serialization
+    checkout_data = checkout_obj.dict()
+    
+    # Convert datetime/date objects to ISO format strings for MongoDB
+    if checkout_data.get('checkout_date'):
+        checkout_data['checkout_date'] = checkout_data['checkout_date'].isoformat()
+    if checkout_data.get('expected_return'):
+        checkout_data['expected_return'] = checkout_data['expected_return'].isoformat()
+    if checkout_data.get('actual_return'):
+        checkout_data['actual_return'] = checkout_data['actual_return'].isoformat()
+    
+    await db.checkout_records.insert_one(checkout_data)
     
     # Update tool status
     await db.tools.update_one(
         {"id": checkout.tool_id},
-        {"$set": {"status": ToolStatus.CHECKED_OUT, "updated_at": datetime.utcnow()}}
+        {"$set": {"status": ToolStatus.CHECKED_OUT, "updated_at": datetime.utcnow().isoformat()}}
     )
     
     return checkout_obj
