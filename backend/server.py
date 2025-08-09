@@ -185,7 +185,9 @@ async def update_tool(tool_id: str, tool_update: ToolCreate):
     
     await db.tools.update_one({"id": tool_id}, {"$set": update_data})
     updated_tool = await db.tools.find_one({"id": tool_id})
-    return Tool(**updated_tool)
+    # Clean tool data by removing MongoDB ObjectId
+    clean_tool = {k: v for k, v in updated_tool.items() if k != '_id'}
+    return Tool(**clean_tool)
 
 @api_router.delete("/tools/{tool_id}")
 async def delete_tool(tool_id: str):
