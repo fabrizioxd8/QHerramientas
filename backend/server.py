@@ -143,7 +143,19 @@ async def get_tools():
 async def create_tool(tool: ToolCreate):
     tool_dict = tool.dict()
     tool_obj = Tool(**tool_dict)
-    await db.tools.insert_one(tool_obj.dict())
+    
+    # Convert Tool object to dict and handle date serialization
+    tool_data = tool_obj.dict()
+    
+    # Convert date objects to ISO format strings for MongoDB
+    if tool_data.get('calibration_due'):
+        tool_data['calibration_due'] = tool_data['calibration_due'].isoformat()
+    if tool_data.get('created_at'):
+        tool_data['created_at'] = tool_data['created_at'].isoformat()
+    if tool_data.get('updated_at'):
+        tool_data['updated_at'] = tool_data['updated_at'].isoformat()
+    
+    await db.tools.insert_one(tool_data)
     return tool_obj
 
 @api_router.get("/tools/{tool_id}", response_model=Tool)
